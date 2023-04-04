@@ -127,8 +127,6 @@ class stump:
             self.stump_weight = max_weight
             
             # Re-evaluating the weight of each datapoint
-            s = type(bool_mis)
-            print(s)
             for i in range(len(weights)):
                 if bool_mis[i] == True:
                     weights[i] = weights[i] * np.exp(max_weight)
