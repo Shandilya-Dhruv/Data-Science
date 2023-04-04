@@ -69,15 +69,15 @@ class stump:
                 else:
                     bool_mis.append(False)
                     
-                if totErr == 1 :
-                    totErr -= 1e-10
-                    
-                stump_weight = 0.5 * (np.log((1-totErr)/totErr))
+            if totErr == 1 :
+                totErr -= 1e-10
                 
-                return (stump_weight, bool_mis)
+            stump_weight = 0.5 * (np.log((1-totErr)/totErr))
+            
+            return (stump_weight, bool_mis)
                 
     
-    def best_stump(self, X, Y, weights, type):
+    def best_stump(self, X, Y, weights, types):
         """
         desc : finds the best stump.
 
@@ -88,7 +88,7 @@ class stump:
         
         return : (list) the list of updated weights after finding the best stump.
         """
-        if type == 'classif':
+        if types == 'classif':
             
             # Evaluate the best stump on the basis of criteria
             max_weight = float("-inf")
@@ -127,6 +127,8 @@ class stump:
             self.stump_weight = max_weight
             
             # Re-evaluating the weight of each datapoint
+            s = type(bool_mis)
+            print(s)
             for i in range(len(weights)):
                 if bool_mis[i] == True:
                     weights[i] = weights[i] * np.exp(max_weight)
