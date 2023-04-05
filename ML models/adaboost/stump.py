@@ -52,7 +52,7 @@ class stump:
         """
         if criteria=='TotalError':
             # Evaluate the total error which is sum of misclassified weights
-            totErr = 1e-10
+            totErr = 1e-20
             bool_mis = []
             for i in range(X.shape[0]):
                 # pred is the classification prediction by our stump
@@ -69,8 +69,8 @@ class stump:
                 else:
                     bool_mis.append(False)
                     
-            if totErr == 1 :
-                totErr -= 1e-10
+            if totErr >= 1 :
+                totErr = 1 - 1e-20
                 
             stump_weight = 0.5 * (np.log((1-totErr)/totErr))
             
@@ -94,15 +94,14 @@ class stump:
             max_weight = float("-inf")
             for i in range(X.shape[0]): 
                 for j in range(X.shape[1]):
-                    
                     l = []
                     r = []
                     
                     for k in range(X.shape[0]):
                         if X[k][j] <= X[i][j]:
-                            l.append(Y[i])
+                            l.append(Y[k])
                         else:
-                            r.append(Y[i])
+                            r.append(Y[k])
                     
                     if len(r)==0:
                         continue
