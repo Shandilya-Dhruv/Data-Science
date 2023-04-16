@@ -51,7 +51,7 @@ class decision_tree:
 
         l : (list) stores the classification of each datapoint
 
-        returns : (tuple) return gini score(int) and the most occuring class in l
+        returns : (tuple) return gini score(float) and the most occuring class in l
         """
         gin = 0
         p = 0
@@ -70,6 +70,18 @@ class decision_tree:
                 p = t
         
         return (-gin,r)
+    
+    def sum_square_error(self, l):
+        """
+        desc: calculates sum of squared error
+
+        l : (list) stores the target variable of each datapoint
+
+        returns : (tuple) return sum of squared error(float) and the average of that list
+        """
+        y_mean = sum(l)/len(l)
+        diff_sq = [(i-y_mean)**2 for i in l]
+        return sum(diff_sq,y_mean)
 
     def split_data(self,X,feature,threshold):
         """
@@ -130,7 +142,28 @@ class decision_tree:
             return (f,thresh,t[0],(t_l[1],t_g[1]))
         
         else:
-            pass
+            sse = float('inf')
+            f = ""
+            thresh = float('-inf')
+
+            for i in range(X.shape[1]):
+                for j in range(X.shape[0]):
+                    l,g = self.make_split(X,i,X[j][i],Y)
+                    if len(l)<self.min_sample_size or len(g)<self.min_sample_size:
+                        continue
+                    num = self.sum_square_error(l)[0] + self.sum_square_error(g)[0]
+                    if num<sse:
+                        sse = num
+                        f = i
+                        thresh = X[j][i]
+
+            t = self.sum_square_error(list(Y))
+            if thresh == float('-inf') and f == "":
+                return (f,thresh,t[0],-1)
+            l,g = self.make_split(X,f,thresh,Y)
+            t_l = self.sum_square_error(l)
+            t_g = self.sum_square_error(g)
+            return (f,thresh,t[0],(t_l[1],t_g[1]))
 
     def build_tree(self,X,depth,Y,type):
         """
