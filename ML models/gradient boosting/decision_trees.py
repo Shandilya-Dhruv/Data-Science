@@ -81,7 +81,7 @@ class decision_tree:
         """
         y_mean = sum(l)/len(l)
         diff_sq = [(i-y_mean)**2 for i in l]
-        return sum(diff_sq,y_mean)
+        return (sum(diff_sq),y_mean)
 
     def split_data(self,X,feature,threshold):
         """
@@ -176,9 +176,11 @@ class decision_tree:
         
         return : (no return type)
         """
-
         tup = self.best_split(X,Y,type)
-        a = node(threshold=tup[1],feature=tup[0],score=tup[2],classif=tup[3])
+        if type=='Classification':
+            a = node(threshold=tup[1],feature=tup[0],score=tup[2],classif=tup[3])
+        else:
+            a = node(threshold=tup[1],feature=tup[0],score=tup[2],classif=tup[3])
 
         #if size constraint is violated
         if tup[1] == float('-inf') and tup[0] == "":
@@ -188,16 +190,16 @@ class decision_tree:
             self.root = a
             l,g = self.split_data(X,tup[0],tup[1])
             Y_l,Y_g = self.make_split(X,tup[0],tup[1],Y)
-            self.root.left = self.build_tree(l,depth+1,Y_l)
-            self.root.right = self.build_tree(g,depth+1,Y_g)
+            self.root.left = self.build_tree(l,depth+1,Y_l,type)
+            self.root.right = self.build_tree(g,depth+1,Y_g,type)
             return self.root
             
         elif depth<=self.max_depth and depth>0:
             n = a
             l,g = self.split_data(X,tup[0],tup[1])
             Y_l,Y_g = self.make_split(X,tup[0],tup[1],Y)
-            n.left = self.build_tree(l,depth+1,Y_l)
-            n.right = self.build_tree(g,depth+1,Y_g)
+            n.left = self.build_tree(l,depth+1,Y_l,type)
+            n.right = self.build_tree(g,depth+1,Y_g,type)
             return n
 
     def print_tree(self,n,depth):
@@ -207,11 +209,12 @@ class decision_tree:
             self.print_tree(n.left,depth+1)
             self.print_tree(n.right,depth+1)
 
-    def predict_row(self,X):
+    def predict_row(self,X,type):
         """
         desc : predicts the output for a single row of features from the dataset
 
         X : (numpy row) row of features
+        type : (string) from : ['Classification','Regression']. specifies the type of problem.
 
         return : (int) the appropriate classification
         """
@@ -237,21 +240,25 @@ class decision_tree:
         else:
             c = r.classif[1]
 
-        if c[0]>=c[1]:
-            return 0
+        if type == 'Classification':
+            if c[0]>=c[1]:
+                return 0
+            else:
+                return 1
         else:
-            return 1
+            return c
 
 
-    def predict(self,X_test):
+    def predict(self,X_test,type):
         """
         desc : predicts the output for a the test dataset
 
         X : (numpy) the test dataset
+        type : (string) from : ['Classification','Regression']. specifies the type of problem.
 
         return : (list) the appropriate classifications of each row
         """
         l = []
         for i in range(X_test.shape[0]):
-            l.append(self.predict_row(X_test[i]))
+            l.append(self.predict_row(X_test[i],type))
         return l
