@@ -123,7 +123,11 @@ class decision_tree:
             thresh = float('-inf')
 
             for i in range(X.shape[1]):
+                checked_thresh = {}
                 for j in range(X.shape[0]):
+                    if X[j][i] in checked_thresh:
+                        continue
+                    checked_thresh.add(X[j][i])
                     l,g = self.make_split(X,i,X[j][i],Y)
                     if len(l)<self.min_sample_size or len(g)<self.min_sample_size:
                         continue
@@ -147,7 +151,11 @@ class decision_tree:
             thresh = float('-inf')
 
             for i in range(X.shape[1]):
+                checked_thresh = set()
                 for j in range(X.shape[0]):
+                    if X[j][i] in checked_thresh:
+                        continue
+                    checked_thresh.add(X[j][i])
                     l,g = self.make_split(X,i,X[j][i],Y)
                     if len(l)<self.min_sample_size or len(g)<self.min_sample_size:
                         continue
