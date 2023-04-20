@@ -123,7 +123,7 @@ class decision_tree:
             thresh = float('-inf')
 
             for i in range(X.shape[1]):
-                checked_thresh = {}
+                checked_thresh = set()
                 for j in range(X.shape[0]):
                     if X[j][i] in checked_thresh:
                         continue
