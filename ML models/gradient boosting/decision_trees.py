@@ -45,17 +45,19 @@ class decision_tree:
         
         return (l,g)
 
-    def gini(self,l):
+    def gini(self,l,pred):
         """
         desc: calculates gini score
 
         l : (list) stores the classification of each datapoint
+        pred : (list) the predictions on each datapoint (for classification only)
 
-        returns : (tuple) return gini score(float) and the most occuring class in l
+        returns : (tuple) return gini score(float) and the output
         """
         gin = 0
         p = 0
-        r = (l.count(0)/len(l),l.count(1)/len(l))
+        s = sum([i*(1-i) for i in pred])
+        r = sum(l)/s
 
         classes = np.unique(l)
 
@@ -106,14 +108,15 @@ class decision_tree:
 
         return (l[1:],g[1:])
 
-    def best_split(self,X,Y,type):
+    def best_split(self,X,Y,type,pred=[]):
         """
         desc : finds the best split for the data
 
         X : (numpy) numpy data for which we need the best split
         Y: (numpy) the series storing classification of each datapoint
         type : (string) from : ['Classification','Regression']. specifies the type of problem.
-
+        pred : (list) the predictions on each datapoint (for classification only)
+        
         returns : (tuple) returns the (feature(best split feature),threshold(best split feature),gini_score(data),classification(most occuring class of data)) of the best data
             return gin as -inf if no such split exists
         """
@@ -129,20 +132,22 @@ class decision_tree:
                         continue
                     checked_thresh.add(X[j][i])
                     l,g = self.make_split(X,i,X[j][i],Y)
+                    pred_l,pred_r = self.make_split(X,i,X[j][i],pred)
                     if len(l)<self.min_sample_size or len(g)<self.min_sample_size:
                         continue
-                    num = (len(l)*self.gini(l)[0] + len(g)*self.gini(g)[0])/(len(l)+len(g))
+                    num = (len(l)*self.gini(l,pred_l)[0] + len(g)*self.gini(g,pred_r)[0])/(len(l)+len(g))
                     if num>gin:
                         gin = num
                         f = i
                         thresh = X[j][i]
 
-            t = self.gini(list(Y))
+            t = self.gini(list(Y),pred)
             if thresh == float('-inf') and f == "":
                 return (f,thresh,t[0],-1)
             l,g = self.make_split(X,f,thresh,Y)
-            t_l = self.gini(l)
-            t_g = self.gini(g)
+            pred_l,pred_r = self.make_split(X,i,X[j][i],pred)
+            t_l = self.gini(l,pred_l)
+            t_g = self.gini(g,pred_r)
             return (f,thresh,t[0],(t_l[1],t_g[1]))
         
         else:
@@ -173,7 +178,7 @@ class decision_tree:
             t_g = self.sum_square_error(g)
             return (f,thresh,t[0],(t_l[1],t_g[1]))
 
-    def build_tree(self,X,depth,Y,type):
+    def build_tree(self,X,depth,Y,type,pred=[]):
         """
         desc : builds our decision tree
 
@@ -181,13 +186,16 @@ class decision_tree:
         depth : (int) the current depth of the tree
         Y: (numpy) the series storing classification of each datapoint
         type : (string) from : ['Classification','Regression']. specifies the type of problem.
+        pred : (list) the predictions on each datapoint (for classification only)
         
         return : (no return type)
         """
-        tup = self.best_split(X,Y,type)
+        
         if type=='Classification':
+            tup = self.best_split(X,Y,type,pred)
             a = node(threshold=tup[1],feature=tup[0],score=tup[2],classif=tup[3])
         else:
+            tup = self.best_split(X,Y,type)
             a = node(threshold=tup[1],feature=tup[0],score=tup[2],classif=tup[3])
 
         #if size constraint is violated
@@ -248,13 +256,7 @@ class decision_tree:
         else:
             c = r.classif[1]
 
-        if type == 'Classification':
-            if c[0]>=c[1]:
-                return 0
-            else:
-                return 1
-        else:
-            return c
+        return c
 
 
     def predict(self,X_test,type):
